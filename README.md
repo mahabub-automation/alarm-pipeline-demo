@@ -1,5 +1,7 @@
 # 🚨 Telecom Alarm Pipeline (Demo)
 
+[![Alarm Pipeline](https://github.com/mahabub-automation/alarm-pipeline-demo/actions/workflows/alarm-pipeline.yml/badge.svg)](https://github.com/mahabub-automation/alarm-pipeline-demo/actions/workflows/alarm-pipeline.yml)
+
 Sanitized showcase of a production alarm-notification pipeline I built for a 24×7 telecom operations centre. The original processes 10,000+ alarm records every 10 minutes and sends region-wise alerts to 16 operations teams.
 
 > All data here is **synthetic**. No real site IDs, operators, endpoints or company code are included.
@@ -10,7 +12,7 @@ Sanitized showcase of a production alarm-notification pipeline I built for a 24�
 - [x] Alarm processing with pandas (validation, active alarms, long outages, region summary)
 - [x] Formatted Excel report
 - [x] Region-wise Telegram notifications
-- [ ] Scheduled run on GitHub Actions
+- [x] Scheduled run on GitHub Actions
 
 ## Try it
 
@@ -21,6 +23,18 @@ python notify.py --dry-run
 ```
 
 `--dry-run` builds the Excel report and prints every Telegram message without sending anything. To send for real, create a `.env` file with `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID`, then run `python notify.py`.
+
+## Runs on GitHub Actions
+
+The whole pipeline runs serverless on GitHub Actions — no PC or server needs to stay on.
+
+| Trigger | What happens |
+|---|---|
+| Daily at 09:00 Asia/Dhaka | Full pipeline in dry-run mode — proves it still works, sends nothing |
+| Manual run | Same, or tick **Send messages to Telegram** to deliver the real notifications |
+| Every run | The Excel report is saved as a downloadable artifact for 14 days |
+
+Results are identical on any machine: the generator uses a fixed random seed, so the numbers in this README match every run.
 
 ## Telegram notifications
 
@@ -72,6 +86,7 @@ Real portal exports are never clean, so the generator deliberately injects commo
 | `formatter.py` | Builds the overview and per-region Telegram messages |
 | `notifier.py` | Reusable Telegram client (messages and documents) |
 | `notify.py` | Runs the full pipeline and sends the notifications |
+| `.github/workflows/alarm-pipeline.yml` | Daily dry run, manual send, report artifact |
 
 ## Author
 
