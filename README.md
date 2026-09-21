@@ -7,7 +7,7 @@ Sanitized showcase of a production alarm-notification pipeline I built for a 24Ã
 ## Roadmap
 
 - [x] Synthetic alarm dataset generator (10,000 alarms, 16 regions)
-- [ ] Alarm processing with pandas (active alarms, long outages, region summary)
+- [x] Alarm processing with pandas (active alarms, long outages, region summary)
 - [ ] Formatted Excel report
 - [ ] Region-wise Telegram notifications
 - [ ] Scheduled run on GitHub Actions
@@ -17,6 +17,7 @@ Sanitized showcase of a production alarm-notification pipeline I built for a 24Ã
 ```bash
 pip install pandas
 python generate_sample_data.py
+python processor.py
 ```
 
 ## Author
