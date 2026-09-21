@@ -4,3 +4,4 @@ __pycache__/
 data/*.csv
 output/
 *.log
+.pytest_cache/

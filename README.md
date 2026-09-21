@@ -13,16 +13,34 @@ Sanitized showcase of a production alarm-notification pipeline I built for a 24�
 - [x] Formatted Excel report
 - [x] Region-wise Telegram notifications
 - [x] Scheduled run on GitHub Actions
+- [x] Automated tests with pytest
 
 ## Try it
 
 ```bash
 pip install -r requirements.txt
+python -m pytest -v
 python generate_sample_data.py
 python notify.py --dry-run
 ```
 
 `--dry-run` builds the Excel report and prints every Telegram message without sending anything. To send for real, create a `.env` file with `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID`, then run `python notify.py`.
+
+## Tests
+
+The processor is covered by 10 pytest tests that run in under a second:
+
+| Test | What it proves |
+|---|---|
+| Validation | Each type of data problem is detected exactly once |
+| Cleaning | Only valid alarms survive; duplicates and broken rows are dropped |
+| Duration | Active and cleared alarm durations are calculated correctly |
+| Long outages | A 5-hour critical alarm is listed before a 10-hour minor one |
+| Region summary | Region totals always add up to the number of active alarms |
+| Duration formatting | Minutes render as readable text, e.g. 325 → `5h 25m` |
+| Full dataset | All 38 injected problems in the 10,015-row dataset are caught |
+
+Tests use a fixed timestamp, so results never depend on when they run. They also run first in every GitHub Actions job — if a test fails, the pipeline stops and no notifications are sent.
 
 ## Runs on GitHub Actions
 
@@ -30,7 +48,7 @@ The whole pipeline runs serverless on GitHub Actions — no PC or server needs t
 
 | Trigger | What happens |
 |---|---|
-| Daily at 09:00 Asia/Dhaka | Full pipeline in dry-run mode — proves it still works, sends nothing |
+| Daily at 09:00 Asia/Dhaka | Tests, then the full pipeline in dry-run mode — proves it still works, sends nothing |
 | Manual run | Same, or tick **Send messages to Telegram** to deliver the real notifications |
 | Every run | The Excel report is saved as a downloadable artifact for 14 days |
 
@@ -86,7 +104,8 @@ Real portal exports are never clean, so the generator deliberately injects commo
 | `formatter.py` | Builds the overview and per-region Telegram messages |
 | `notifier.py` | Reusable Telegram client (messages and documents) |
 | `notify.py` | Runs the full pipeline and sends the notifications |
-| `.github/workflows/alarm-pipeline.yml` | Daily dry run, manual send, report artifact |
+| `tests/test_processor.py` | pytest suite for the processor |
+| `.github/workflows/alarm-pipeline.yml` | Tests, daily dry run, manual send, report artifact |
 
 ## Author
 
