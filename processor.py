@@ -116,7 +116,7 @@ def process(path=INPUT_FILE, now=None):
 
     active = alarms[alarms["IsActive"]]
     long_outages = active[active["DurationMin"] >= LONG_OUTAGE_MINUTES].sort_values(
-        "DurationMin", ascending=False
+        ["Severity", "DurationMin"], ascending=[True, False], key=lambda col: col.map(SEVERITY_ORDER.index) if col.name ==  "Severity" else col
     )
 
     return {
@@ -157,7 +157,7 @@ def main():
     top_sites["Longest"] = top_sites["LongestMin"].apply(format_minutes)
     print(top_sites.drop(columns="LongestMin").to_string(index=False))
 
-    print("\nLongest running outages:")
+    print("\nLongest running outages (critical first):")
     longest = result["long_outages"].head(5)[
         ["SiteID", "Region", "AlarmName", "Severity", "DurationMin"]
     ].copy()
