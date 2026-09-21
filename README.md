@@ -7,7 +7,7 @@ Sanitized showcase of a production alarm-notification pipeline I built for a 24Ã
 ## Roadmap
 
 - [x] Synthetic alarm dataset generator (10,000 alarms, 16 regions)
-- [x] Alarm processing with pandas (active alarms, long outages, region summary)
+- [x] Alarm processing with pandas (validation, active alarms, long outages, region summary)
 - [ ] Formatted Excel report
 - [ ] Region-wise Telegram notifications
 - [ ] Scheduled run on GitHub Actions
@@ -19,6 +19,19 @@ pip install pandas
 python generate_sample_data.py
 python processor.py
 ```
+
+## Data quality checks
+
+Real portal exports are never clean, so the generator deliberately injects common problems and the processor catches and removes them before any report is built:
+
+| Check | Injected | Caught |
+|---|---|---|
+| Duplicate alarm IDs | 15 | 15 |
+| Missing occur time | 10 | 10 |
+| Clear time before occur time | 8 | 8 |
+| Unknown severity | 5 | 5 |
+
+10,015 raw records â†’ 9,977 clean records.
 
 ## Author
 

@@ -3,6 +3,8 @@ Generate a realistic but fully synthetic telecom tower alarm dataset.
 
 No real site IDs, operators or company data are used. Region names are
 generic geographic areas; site IDs and alarm IDs are randomly generated.
+A small number of realistic data-quality problems are injected on purpose
+so the processor's validation step can be demonstrated.
 """
 
 import os
@@ -93,12 +95,49 @@ def generate_alarms(now):
     return dataframe.sort_values("OccurTime", ascending=False).reset_index(drop=True)
 
 
+def inject_data_quality_issues(dataframe):
+    """
+    Add a small number of realistic data problems, like those found in
+    real portal exports, so the processor's validation step has work to do.
+    """
+    dirty = dataframe.copy()
+    rng = random.Random(RANDOM_SEED)
+    indexes = list(dirty.index)
+    rng.shuffle(indexes)
+
+    missing_time_rows = indexes[0:10]
+    reversed_time_rows = [
+        row for row in indexes[10:200] if dirty.at[row, "ClearTime"] != ""
+    ][:8]
+    bad_severity_rows = indexes[200:205]
+    duplicate_rows = indexes[300:315]
+
+    dirty.loc[missing_time_rows, "OccurTime"] = ""
+
+    for row in reversed_time_rows:
+        occur = datetime.strptime(dirty.at[row, "OccurTime"], "%Y-%m-%d %H:%M:%S")
+        dirty.at[row, "ClearTime"] = (occur - timedelta(minutes=30)).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+    dirty.loc[bad_severity_rows, "Severity"] = "Warning"
+    dirty = pd.concat([dirty, dirty.loc[duplicate_rows]], ignore_index=True)
+
+    print(
+        f"Injected issues: {len(duplicate_rows)} duplicates, "
+        f"{len(missing_time_rows)} missing times, "
+        f"{len(reversed_time_rows)} reversed times, "
+        f"{len(bad_severity_rows)} unknown severities"
+    )
+    return dirty
+
+
 def main():
     random.seed(RANDOM_SEED)
     os.makedirs("data", exist_ok=True)
 
     now = datetime.now().replace(microsecond=0)
-    alarms = generate_alarms(now)
+    alarms = inject_data_quality_issues(generate_alarms(now))
     alarms.to_csv(OUTPUT_FILE, index=False)
 
     active = alarms[alarms["ClearTime"] == ""]
