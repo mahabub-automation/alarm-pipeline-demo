@@ -8,17 +8,31 @@ Sanitized showcase of a production alarm-notification pipeline I built for a 24Ã
 
 - [x] Synthetic alarm dataset generator (10,000 alarms, 16 regions)
 - [x] Alarm processing with pandas (validation, active alarms, long outages, region summary)
-- [ ] Formatted Excel report
+- [x] Formatted Excel report
 - [ ] Region-wise Telegram notifications
 - [ ] Scheduled run on GitHub Actions
 
 ## Try it
 
 ```bash
-pip install pandas
+pip install -r requirements.txt
 python generate_sample_data.py
 python processor.py
+python excel_report.py
 ```
+
+The report is written to `output/alarm_report_YYYYMMDD_HHMM.xlsx`.
+
+## Excel report
+
+| Sheet | Contents |
+|---|---|
+| Summary | Record counts, active and critical alarms, long outages, data-quality results |
+| Regions | Active alarms per region by severity, with heat-map colouring on Critical and long-outage columns |
+| Long Outages | Every alarm active for 4+ hours, critical first, rows coloured by severity |
+| Top Sites | Sites with the most active alarms right now |
+
+Every sheet has a frozen header, filters and auto-sized columns.
 
 ## Data quality checks
 
@@ -32,6 +46,14 @@ Real portal exports are never clean, so the generator deliberately injects commo
 | Unknown severity | 5 | 5 |
 
 10,015 raw records â†’ 9,977 clean records.
+
+## Project structure
+
+| File | Role |
+|---|---|
+| `generate_sample_data.py` | Builds the synthetic alarm dataset with injected data-quality issues |
+| `processor.py` | Loads, validates, cleans and summarises the alarms |
+| `excel_report.py` | Writes the formatted multi-sheet workbook |
 
 ## Author
 
