@@ -34,6 +34,14 @@ The report is written to `output/alarm_report_YYYYMMDD_HHMM.xlsx`.
 
 Every sheet has a frozen header, filters and auto-sized columns.
 
+**Regions** — active alarms per region, heat-mapped by critical count:
+
+![Regions sheet](docs/excel_regions.png)
+
+**Long Outages** — critical alarms first, rows coloured by severity:
+
+![Long Outages sheet](docs/excel_long_outages.png)
+
 ## Data quality checks
 
 Real portal exports are never clean, so the generator deliberately injects common problems and the processor catches and removes them before any report is built:
