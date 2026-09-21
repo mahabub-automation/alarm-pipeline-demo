@@ -9,7 +9,7 @@ Sanitized showcase of a production alarm-notification pipeline I built for a 24Ã
 - [x] Synthetic alarm dataset generator (10,000 alarms, 16 regions)
 - [x] Alarm processing with pandas (validation, active alarms, long outages, region summary)
 - [x] Formatted Excel report
-- [ ] Region-wise Telegram notifications
+- [x] Region-wise Telegram notifications
 - [ ] Scheduled run on GitHub Actions
 
 ## Try it
@@ -17,11 +17,18 @@ Sanitized showcase of a production alarm-notification pipeline I built for a 24Ã
 ```bash
 pip install -r requirements.txt
 python generate_sample_data.py
-python processor.py
-python excel_report.py
+python notify.py --dry-run
 ```
 
-The report is written to `output/alarm_report_YYYYMMDD_HHMM.xlsx`.
+`--dry-run` builds the Excel report and prints every Telegram message without sending anything. To send for real, create a `.env` file with `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID`, then run `python notify.py`.
+
+## Telegram notifications
+
+Each run sends one nationwide overview, one message per region (16 in total) and the full Excel report as an attachment. Every region message lists its active alarms by severity, its long outages and its three longest-running critical alarms.
+
+![Region messages in Telegram](docs/telegram_messages.png)
+
+In production each region posts to its own operations group. `REGION_CHAT_IDS` in `notify.py` maps a region to a chat; unmapped regions fall back to the default chat. Messages are rate-limited to stay under Telegram's per-chat limit.
 
 ## Excel report
 
@@ -62,6 +69,9 @@ Real portal exports are never clean, so the generator deliberately injects commo
 | `generate_sample_data.py` | Builds the synthetic alarm dataset with injected data-quality issues |
 | `processor.py` | Loads, validates, cleans and summarises the alarms |
 | `excel_report.py` | Writes the formatted multi-sheet workbook |
+| `formatter.py` | Builds the overview and per-region Telegram messages |
+| `notifier.py` | Reusable Telegram client (messages and documents) |
+| `notify.py` | Runs the full pipeline and sends the notifications |
 
 ## Author
 
