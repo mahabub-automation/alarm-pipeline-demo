@@ -1,0 +1,53 @@
+name: Alarm Pipeline
+
+on:
+  schedule:
+    # 03:00 UTC = 09:00 Asia/Dhaka, daily dry run
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      send:
+        description: 'Send messages to Telegram (leave unticked for a dry run)'
+        type: boolean
+        default: false
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: Asia/Dhaka
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate sample data
+        run: python generate_sample_data.py
+
+      - name: Run pipeline (dry run)
+        if: ${{ github.event_name == 'schedule' || !inputs.send }}
+        run: python notify.py --dry-run
+
+      - name: Run pipeline and send to Telegram
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.send }}
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python notify.py
+
+      - name: Upload Excel report
+        uses: actions/upload-artifact@v4
+        with:
+          name: alarm-report
+          path: output/*.xlsx
+          retention-days: 14
