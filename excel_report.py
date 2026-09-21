@@ -51,6 +51,7 @@ def style_table(sheet):
     for row in sheet.iter_rows(min_row=1, max_row=sheet.max_row):
         for cell in row:
             cell.border = BORDER
+            cell.alignment = Alignment(horizontal="center", vertical="center")
 
     sheet.freeze_panes = "A2"
     sheet.auto_filter.ref = sheet.dimensions
